@@ -1,0 +1,275 @@
+{% extends "game/base.html" %}{% load staticfiles %} {%block style%}
+<style>
+    body {
+        text-align: center;
+    }
+
+    .game2 {
+        width: 600px;
+        height: 525px;
+        margin: auto;
+        margin-top: 50px;
+        border: 2px solid black;
+        background-color: rgba(255, 255, 255, 0.438);
+    }
+    .game2 button{
+        margin-top:220px;
+    }
+
+    .flip-container {
+        display: inline-block;
+        perspective: 1000px;
+        border: 2px solid rgba(255, 255, 255, 0) !important;
+        margin: 10px;
+    }
+
+
+    .front {
+        z-index: 2;
+        /* for firefox 31 */
+        transform: rotateY(0deg);
+        background-color: rgba(128, 128, 128, 0.473);
+    }
+
+
+    .back {
+        transform: rotateY(180deg);
+        background-size: cover;
+    }
+
+
+    .flip-container,
+    .front,
+    .back {
+        width: 100px;
+        height: 150px;
+
+    }
+
+
+    .flipper {
+        transition: 1s;
+        /* 하위요소에 3D 좌표값 지정 */
+        transform-style: preserve-3d;
+        position: relative;
+    }
+
+    .front,
+    .back {
+        position: absolute;
+        backface-visibility: hidden;
+    }
+    #score{font-size:2.0em;
+            font-weight:bold;}
+</style>
+{% endblock %} {% block content %}
+<h1> 같은 그림의 카드를 찾아서 점수를 달성하세요!</h1>
+<div class="game2"><button type="button" id="startbut" class="btn btn btn-primary">게임시작!</button>
+</div>
+<p id="score">myscore:1000</p>
+<button type="button" id="but1" class="btn btn btn-primary">스코어 등록하기</button>
+<button type="button" id="restart" class="btn btn btn-primary">다시하기</button>
+{% endblock%} {% block javascript %}
+<script>
+    $(document).ready(function () {
+        var cardData = [],
+            twin = 6,
+            html = "",
+            cardPush = [],
+            count = 0,
+            checkArray = [],
+            time = 0,
+            scoreEl = $('#score'),
+            scoredata = 0,
+            gametitle = "game2";
+
+        function initPuzzle() {
+            cardData = [],
+                html = "",
+                cardPush = [],
+                count = 0,
+                checkArray = [],
+                time = 1000,
+                scoredata = 0;
+
+            for (var i = 0; i < twin; i++) {
+                cardData.push(i);
+                cardData.push(i);
+
+
+            }
+
+
+
+            for (var i = 0; i < twin * 2; i++) {
+                var cardLen = cardData.length;
+                var ab = Math.floor(Math.random() * cardLen);
+                var b = cardData.splice(ab, 1);
+                cardPush.push({
+                    onoff: 0,
+                    num: b
+                });
+
+                html += "<div class='flip-container'" + "value='" + b + "'" +
+                    "> <div class='flipper'> <div class='front'></div><div class='back'></div></div></div>"
+            }
+
+            $('.game2').html(html);
+            for (var i = 0; i < cardPush.length; i++) {
+                var imgSet = $('.flip-container').eq(i),
+                    imgsetting = imgSet.attr("value");
+                switch (imgsetting) {
+                    case "0":
+                        imgSet.find('.flipper .back').css("background-image",
+                            "url({% static 'images/cat.jpg' %})");
+                        break;
+                    case "1":
+                        imgSet.find('.flipper .back').css("background-image",
+                            "url({% static 'images/food.jpg' %})");
+                        break;
+                    case "2":
+                        imgSet.find('.flipper .back').css("background-image",
+                            "url({% static 'images/fox.jpg' %})");
+                        break;
+                    case "3":
+                        imgSet.find('.flipper .back').css("background-image",
+                            "url({% static 'images/orange.jpg' %})");
+                        break;
+                    case "4":
+                        imgSet.find('.flipper .back').css("background-image",
+                            "url({% static 'images/family.jpg' %})");
+                        break;
+                    case "5":
+                        imgSet.find('.flipper .back').css("background-image",
+                            "url({% static 'images/macarons.jpg' %})");
+
+                }
+            };
+            buttonEvent();
+        };
+        // function change() {
+        function buttonEvent() {
+            $('.flip-container').bind('click', function () {
+                $('.flip-container').unbind('click');
+
+
+
+                var change = $(this),
+                    order = $('.game2>div').index(this),
+                    thisValue = $(this).attr("value");
+
+                if (cardPush[order].onoff == 0) {
+
+                    change.find('.flipper').css('transform', 'rotateY(180deg)');
+                    cardPush[order].onoff = 1;
+                    checkArray.push(order);
+                    count += 1;
+
+                } else if (cardPush[order].onoff == 1) {
+                    change.find('.flipper').css('transform', 'rotateY(0deg)');
+                    cardPush[order].onoff = 0;
+
+                    var del = checkArray.indexOf(thisValue);
+                    checkArray.splice(del, 1);
+                    count -= 1;
+                };
+                var findnum = cardPush.filter(function (thisnum1) {
+                    return thisnum1.num[0] === parseInt(thisValue)
+                });
+
+                setTimeout(cardCheck, 800);
+
+                function cardCheck() {
+
+                    if (findnum[0].onoff == 1 && findnum[0].onoff == findnum[1].onoff & count == 2) {
+                        findnum[0].onoff = "complete";
+                        findnum[1].onoff = "complete";
+                        count = 0;
+                        checkArray = [];
+                        setTimeout(isEnd(), 1000);
+
+
+                    } else if (count == 2) {
+                        cardPush[order].onoff = 0;
+                        cardPush[checkArray[0]].onoff = 0;
+                        change.find('.flipper').css('transform', 'rotateY(0deg)');
+                        $('.flip-container').find('.flipper').eq(checkArray[0]).css('transform',
+                            'rotateY(0deg)');
+                        count = 0;
+                        checkArray = [];
+                    }
+                    buttonEvent();
+                }
+                clearTimeout();
+
+
+                isEnd();
+
+                function isEnd() {
+                    for (var i = 0; i < cardPush.length; i++) {
+                        if (cardPush[i].onoff != "complete") return;
+                    }
+                    alert('축하합니다!');
+                    clearInterval(Interval);
+                    Interval = null;
+                    scoredata = time;
+                }
+
+            });
+        };
+
+
+        var Interval = "";
+
+        function scoretime() {
+            time -= 1;
+            scoreEl.html('myscore:' + time);
+        };
+
+        $("#startbut").click(function(){
+
+        initPuzzle();
+        Interval = setInterval(scoretime, 1000);
+        })
+
+
+
+
+        $("#but1").click(function () {
+            if (scoredata == 0) {
+                alert('게임을 클리어한 후에 점수기록이 가능합니다.')
+            }
+            else if('{{user.id}}'== 'None'){
+                alert('로그인 후에 점수기록이 가능합니다.')
+
+            } else {
+                $.ajax({
+                    url: '{% url "validate_scoreupdate" %}',
+                    type: 'GET',
+                    data: {
+                        'player': '{{user.id}}',
+                        'scoredata': scoredata,
+                        'gametitle': gametitle
+                    },
+                    dataType: 'json',
+
+                    success: function (data) {
+
+                        $("#demo2").html(data.score);
+                    }
+
+                });
+                alert('점수기록완료! 순위페이지로 가서 몇등인지 확인해보세요!')
+            }
+        });
+        $('#restart').click(function () {
+            scoreEl.html('myscore:' + 1000);
+            initPuzzle();
+            if (Interval == null) {
+                Interval = setInterval(scoretime, 1000);
+            }
+        })
+
+    });
+</script>
+{%endblock%}

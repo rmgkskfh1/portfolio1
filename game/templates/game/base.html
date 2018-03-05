@@ -1,0 +1,107 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>게임 Portfolio</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <style>
+    /* Remove the navbar's default margin-bottom and rounded borders */
+
+    .navbar {
+      margin-bottom: 0;
+      border-radius: 0;
+    }
+
+    /* Add a gray background color and some padding to the footer */
+
+    footer {
+      background-color: #f2f2f2;
+      padding: 25px;
+    }
+  </style>
+  <link rel="stylesheet" href="{% static 'css/base.css' %}"> {% block style%} {% endblock %}
+</head>
+
+<body>
+
+  <nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="/">Portfolio</a>
+      </div>
+      <div class="collapse navbar-collapse" id="myNavbar">
+        <ul class="nav navbar-nav">
+          <li class="nav1">
+            <a href="/">Home</a>
+          </li>
+          <li class="nav2">
+            <a href="{% url 'register' %}">
+              <span>회원가입</span>
+            </a>
+          </li>
+          <li class="nav3">
+            <a href="{% url 'score_list' %}">
+              <span>순위</span>
+            </a>
+          </li>
+        </ul>
+
+        <ul class="nav navbar-nav navbar-right">
+          {% if user.is_authenticated %}
+          <li>
+            <a href="#">
+              <span class="top-menu">안녕하세요 {{ user.username }} 님</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'logout' %}">Log out</a>
+          </li>
+          {% else %}
+          <li>
+            <a href="{% url 'login' %}">
+              <span>로그인</span>
+            </a>
+          </li>
+        </ul>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+  {% block content %} {% endblock %}
+  <br>
+  <br>
+
+  <footer class="container-fluid text-center">
+    <p>
+      <bold>
+        <strong>E-mail</strong>:wjseodus1@naver.com
+        <br>
+        <strong>TEL</strong>:010-4938-9376
+      </bold>
+    </p>
+  </footer>
+  <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+  {% block javascript %}{% endblock %}
+  <script>
+    if ($('div').hasClass('jumbotron')) {
+      $('.nav1').addClass('active');
+
+    } else if ($('div').hasClass('registerpage')) {
+      $('.nav2').addClass('active');
+    } else if ($('div').hasClass('scorelistpage')) {
+      $('.nav3').addClass('active');
+    }
+  </script>
+</body>
+
+</html>

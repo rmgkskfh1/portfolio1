@@ -1,0 +1,63 @@
+{% extends 'game/base.html' %} {% block style%}
+<style>
+    h1.gametitle {
+        float: left;
+    }
+
+    table {
+        width: 50%;
+    }
+
+    th,
+    td {
+        text-align: center;
+    }
+
+</style>
+{% endblock %} {% block content %}
+<div class="scorelistpage">
+    <h1 class="gametitle">Sliding Puzzle 순위</h1>
+    <table id="demo" class="table table-condensed"></table>
+    <h1 class="gametitle">카드맞추기 순위</h1>
+    <table id="demo2" class="table table-condensed"></table>
+    <!-- <p class="userid">1</p> -->
+</div>
+{% endblock %} {% block javascript %}
+<script>
+    var user = '{{user.username}}'
+
+
+
+
+    $(document).ready(function () {
+
+        $.ajax({
+            url: '{% url "game1score_list" %}',
+            data: {
+                'game': 'game1',
+                'user':user
+                //  'num': 0,
+            },
+            dataType: 'json',
+            success: function (data) {
+                $("#demo").html(data.scoredata);
+            },
+
+        });
+        $.ajax({
+            url: '{% url "game1score_list" %}',
+            data: {
+                'game': 'game2',
+                'user':user
+                //  'num': 0,
+            },
+            dataType: 'json',
+            success: function (data) {
+                $("#demo2").html(data.scoredata);
+            },
+
+        });
+
+    });
+</script>
+{% endblock %}

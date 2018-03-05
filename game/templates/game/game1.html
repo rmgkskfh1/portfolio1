@@ -1,0 +1,439 @@
+{% extends 'game/base.html' %} {% load staticfiles %}{%block style%}
+<style>
+    .game1 {
+        width: 70%;
+        margin: auto;
+    }
+
+    #board {
+        border-collapse: collapse;
+        background-size: 300px 100%;
+    }
+
+    #board td.num {
+        width: 100px;
+        height: 100px;
+        padding: 0;
+        text-align: center;
+        opacity: 1.0;
+        color: rgba(255, 255, 255, 0);
+    }
+    #score{font-size:2.0em;
+            font-weight:bold;}
+    #demo strong, #demo2 strong{
+        color:rgb(255, 145, 0);
+    }
+</style>
+{% endblock %} {% block content %}
+
+<div class="game1">
+    <br>
+    <br>
+    <h4>빠르게 퍼즐을 완성하여 높은점수를 획득하세요!</h4>
+    <div class="puzzle">
+        <table id="board"><button type="button" id="startbut" class="btn btn btn-primary">게임시작!</button></table>
+
+    </div>
+    <div class="puzzlescore">
+        <img src="#">
+        <p id="score">myscore:1000</p>
+        <p>마우스 또는 키보드를 사용하여 퍼즐을 맞추세요!</p>
+        <button type="button" id="restart">다시하기</button>
+    </div>
+    <br>
+    <br>
+    <div class="butmenu">
+        <p>아래 버튼을 클릭해 보세요.</p>
+        <p id="demo">마지막 기록점수</p>
+        <p id="demo2">현재 클리어 점수 확인</p>
+        <div class="btn-group">
+            <button type="button" id="but1" class="btn btn btn-primary">마지막으로 기록된 스코어 확인</button>
+            <button type="button" id="but2" class="btn btn btn-primary">스코어 기록하기</button>
+            <button type="button" id="clearbut" class="btn btn btn-primary">클리어버튼</button>
+            <button type="button" id="imageChange" class="btn btn btn-primary">이미지바꾸기</button>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block javascript %}
+<script>
+    var scoredata = 0,
+        random = Math.floor(Math.random() * 4),
+        ranArr = [0, 1, 2, 3, 4, 5, 6];
+
+    (function ($) {
+        "use strict";
+
+        var ColsNumber = 3,
+            YLEN = ColsNumber, // 행 길이
+            XLEN = ColsNumber, // 열 길이
+            blank = YLEN * XLEN - 1, // 빈칸 위치
+            BLANK = 0, // 빈칸의 값
+            board = [], // 보드 배열 (YLEN x XLEN)
+            boardEl = $('#board'), // 테이블 엘리먼트
+            time = 1000,
+            scoreEl = $('#score'),
+            level = 1,
+            gametitle="game1";
+
+
+
+
+
+        function setimage() {
+            var backimg = "",
+                backimg1 = "",
+                a = "url({% static 'images/cat.jpg' %})",
+                b = "url({% static 'images/family.jpg' %})",
+                c = "url({% static 'images/fox.jpg' %})",
+                d = "url({% static 'images/food.jpg' %})",
+                e = "url({% static 'images/billige.jpg' %})",
+                f = "url({% static 'images/orange.jpg' %})",
+                g = "url({% static 'images/macarons.jpg' %})",
+                a1 = "{% static 'images/cat.jpg' %}",
+                b1 = "{% static 'images/family.jpg' %}",
+                c1 = "{% static 'images/fox.jpg' %}",
+                d1 = "{% static 'images/food.jpg' %}",
+                e1 = "{% static 'images/billige.jpg' %}",
+                f1 = "{% static 'images/orange.jpg' %}",
+                g1 = "{% static 'images/macarons.jpg' %}";
+
+
+
+            switch (random) {
+                case 0:
+                    backimg = a;
+                    backimg1 = a1;
+                    break;
+                case 1:
+                    backimg = b;
+                    backimg1 = b1;
+                    break;
+                case 2:
+                    backimg = c;
+                    backimg1 = c1;
+                    break;
+                case 3:
+                    backimg = d;
+                    backimg1 = d1;
+                    break;
+                case 4:
+                    backimg = e;
+                    backimg1 = e1;
+                    break;
+                case 5:
+                    backimg = f;
+                    backimg1 = f1;
+                    break;
+                case 6:
+                    backimg = g;
+                    backimg1 = g1;
+                    break;
+            }
+            $('#board td.num').css("background-image", backimg);
+            $('.puzzlescore img').attr('src', backimg1);
+        }
+
+
+
+
+        function initPuzzle() {
+            // 퍼즐 데이터를 초기화
+
+            YLEN = ColsNumber, // 행 길이
+                XLEN = ColsNumber, // 열 길이
+                blank = YLEN * XLEN - 1, // 빈칸 위치
+                BLANK = 0, // 빈칸의 값
+                board = [], // 보드 배열 (YLEN x XLEN)
+                boardEl = $('#board'); // 테이블 엘리먼트
+
+            for (var y = 0; y < YLEN; y++) {
+                board[y] = []; // 각 행마다 열 배열 설정
+                for (var x = 0; x < XLEN; x++) {
+                    var idx = y * XLEN + x;
+                    if (idx < blank) board[y][x] = idx + 1; // 순서대로 숫자 할당
+                    else board[y][x] = BLANK; // 마지막 빈칸 설정
+                }
+            }
+            // 이동 방향
+            var moves = ['r', 'l', 'd', 'u'];
+            for (var z = 0; z < 500; z++) { // 500회 동안 무작위로 이동
+                move(moves[parseInt(Math.random() * 4, 10)], false);
+            }
+            // 데이터 초기화 후 화면 갱신
+            updateBoard();
+        }
+
+
+        function updateBoard() { // 퍼즐 데이터를 화면에 표시
+            boardEl.empty(); // 테이블을 비우고
+            var html = '',
+                inNumber = 0;
+            for (var y = 0; y < YLEN; y++) {
+                html += '<tr>';
+                for (var x = 0; x < XLEN; x++) {
+                    if (board[y][x] != BLANK) {
+                        var a = board[y][x];
+                        html += '<td class="num"' + imageMatch(a) + inNumber + '</td>';
+                    } else html += '<td class="blank" style=background-color:#ffc6f3;>&nbsp;</td>';
+                    inNumber += 1; // 빈칸
+                }
+                html += '</tr>';
+            }
+
+            boardEl.html(html);
+            setimage();
+            mouseclick();
+        }
+
+        function imageMatch(num) {
+            num = num - 1;
+            var wid = 50,
+                hei = 50;
+            if (level == 2) {
+                wid = 33.3;
+                hei = 33.3;
+
+            }
+            if (level == 3) {
+                wid = 25;
+                hei = 25;
+            }
+
+            var a = num % ColsNumber,
+                b = parseInt(num / ColsNumber);
+
+
+            return ' style="background-position:' + (wid * (a)) + '%' + ' ' + (hei * (b)) + '%; ' +
+                'background-size:' + (ColsNumber * 100) + '% ' + (ColsNumber * 100) + '%;">'
+        }
+
+
+        function moveTo(to) { // 빈칸을 to 위치로 이동
+            // 빈칸에 to 위치의 숫자 옮기고
+            board[parseInt(blank / YLEN, 10)][blank % XLEN] = board[parseInt(to / YLEN, 10)][to % XLEN];
+            // to 위치에 빈칸 값 설정
+            board[parseInt(to / YLEN, 10)][to % XLEN] = BLANK;
+            // to 위치를 빈칸으로 설정
+            blank = to;
+            // 화면 갱신
+            updateBoard();
+        }
+
+        function isEnd() {
+            for (var y = 0; y < YLEN; y++) {
+                for (var x = 0; x < XLEN; x++) {
+                    var expect = y * XLEN + x + 1; // 기대값
+                    if (y * XLEN + x < YLEN * XLEN - 1) { // 마지막 칸은 제외
+                        if (board[y][x] != expect) return; // 기대값이 아니면 중단
+                    }
+                }
+            }
+            // 여기 까지 코드가 진행 됐다면. 성공.
+            setTimeout(isclear, 500);
+
+        }
+
+
+        function isclear() {
+
+            switch (level) {
+                case 1:
+                    alert('초급클리어! 잠시후 중급레벨을 시작합니다');
+                    imgChangefun();
+                    setTimeout(nextLevel, 2000);
+
+                    break;
+                case 2:
+                    alert('중급클리어! 잠시후 고급레벨을 시작합니다');
+                    imgChangefun();
+                    setTimeout(nextLevel, 2000);
+                    break;
+                case 3:
+                    alert('고급클리어! 축하합니다!');
+                    clearInterval(Interval);
+                    Interval = null;
+                    scoredata = time;
+                    break;
+
+            }
+
+            function nextLevel() {
+                if (level != 3) {
+                    level += 1;
+                    ColsNumber += 1;
+                    document.getElementById('board').style.backgroundSize = (ColsNumber * 100) + 'px 100%';
+                    initPuzzle();
+                    mouseclick();
+                }
+            };
+        }
+
+        function move(d, human) { // 이동 (가능한 경우)
+            // d : 이동 방향 
+            // human : 사람이 이동 했는지 여부 (초기화를 위해)
+            switch (d) {
+                case 'r': // right : 빈칸이 맨 좌측이 아니면 빈칸을 좌측으로 이동
+                    if (blank % XLEN > 0) moveTo(blank - 1);
+                    break;
+                case 'l': // left : 빈칸이 맨 우측이 아니면 빈칸을 우측으로 이동
+                    if (blank % XLEN < XLEN - 1) moveTo(blank + 1);
+                    break;
+                case 'd': // down : 빈칸이 멘 위가 아니면 빈칸을 위로 이동
+                    if (parseInt(blank / YLEN, 10) > 0) moveTo(blank - XLEN);
+                    break;
+                case 'u': // up : 빈칸이 맨 아래가 아니면 빈칸을 아래로 이동
+                    if (parseInt(blank / YLEN, 10) < YLEN - 1) moveTo(blank + XLEN);
+                    break;
+            }
+            // 사람이 움직였다면 완료 여부 체크
+            if (human) isEnd();
+        }
+
+        $(document).keydown(function (e) {
+            // 눌린 키에 따라 이동
+            switch (e.which) {
+                case 37:
+                    move('l', true);
+                    break;
+                case 38:
+                    move('u', true);
+                    break;
+                case 39:
+                    move('r', true);
+                    break;
+                case 40:
+                    move('d', true);
+                    break;
+            }
+        });
+        $(document).ready(function () {
+            mouseclick();
+
+        });
+
+        function mouseclick() {
+            $('td').click(function () {
+                var a = this.innerHTML,
+                    num = parseInt(a);
+                if (num == blank + 1 || num == blank - 1 || num == blank + XLEN || num == blank - XLEN) {
+                    moveTo(num);
+                    isEnd();
+                } else {}
+
+            });
+
+        }
+        
+
+        var Interval = "";
+
+        function scoretime() {
+            time -= 1;
+            scoreEl.html('myscore:' + time);
+            if(time==0){
+                clearInterval(Interval);
+            }
+        }
+        //퍼즐푸는 시간 타이머
+        
+
+        function imgChangefun() {
+            var index = ranArr.indexOf(random);
+            ranArr.splice(index, 1);
+            var a = ranArr[Math.floor(Math.random() * 6)];
+            ranArr.push(random);
+            random = a;
+
+        }
+        
+
+        $(document).ready(function () {
+            $("#startbut").click(function(){
+
+                initPuzzle(); // 보드 데이터 초기화
+                Interval = setInterval(scoretime, 1000);
+                $(this).toggle();
+            })
+            $("#clearbut").click(function () {
+                isclear();
+            });
+        });
+        $("#restart").click(function () {
+            ColsNumber = 3;
+            level = 1;
+            time = 1000;
+            scoreEl.html('myscore:' + time);
+
+            initPuzzle();
+            if (Interval == null) {
+                Interval = setInterval(scoretime, 1000);
+            }
+
+        })
+        $('#imageChange').click(function () {
+            imgChangefun();
+
+            updateBoard();
+
+        })
+    })(jQuery);
+
+
+
+
+
+    //ajax 연동
+    $(document).ready(function () {
+
+        $("#but1").click(function () {
+            if('{{user.id}}'=='None'){
+                alert('로그인 후 확인 가능합니다');
+            }
+            else{
+
+            $.ajax({
+                url: '{% url "validate_score" %}',
+                data: {
+                    'player': '{{user.id}}'
+                },
+                dataType: 'json',
+                error: function (error) {
+                    alert("기록된데이터가 없습니다")
+                },
+                success: function (data) {
+                    $("#demo").html('마지막 기록점수는<strong>'+data.score+'</strong>점 입니다.');
+                }
+            });};
+        });
+        $("#but2").click(function () {
+            
+            if('{{user.id}}'== 'None'){
+                alert('로그인 후에 점수기록이 가능합니다.')
+
+            }
+            else if (scoredata == 0) {
+                alert('고급난이도를 클리어한 후에 점수기록이 가능합니다.')
+            }
+             else {
+                $.ajax({
+                    url: '{% url "validate_scoreupdate" %}',
+                    type: 'GET',
+                    data: {
+                        'player': '{{user.id}}',
+                        'scoredata': scoredata,
+                        'gametitle': 'game1'
+                    },
+                    dataType: 'json',
+
+                    success: function (data) {
+
+                        $("#demo2").html('이번게임에서<strong>'+data.score+'</strong>점을 달성하였습니다.');
+                    }
+
+                });
+                alert('점수기록완료! 순위페이지로 가서 몇등인지 확인해보세요!')
+            }
+        });
+    });
+</script>
+{% endblock %}
