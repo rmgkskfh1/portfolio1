@@ -75,7 +75,7 @@ def game1score_list(request):
 def game1(request):
     return render(request, 'game/game1.html', {})
 
-
+@login_required
 def score_list(request):
     return render(request, 'game/score_list.html', {})
 
